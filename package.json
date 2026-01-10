@@ -1,0 +1,36 @@
+{
+  "name": "eternaproject",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/api/server.ts",
+  "scripts": {
+    "start": "ts-node src/api/server.ts",
+    "dev": "nodemon src/api/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "axios-retry": "^4.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ioredis": "^5.4.2",
+    "node-cron": "^3.0.3",
+    "socket.io": "^4.8.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.6",
+    "@types/node-cron": "^3.0.11",
+    "@types/socket.io-client": "^1.4.36",
+    "nodemon": "^3.1.9",
+    "socket.io-client": "^4.8.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}
