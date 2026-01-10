@@ -149,138 +149,192 @@ function App() {
   return (
     <div className="container">
       {/* Header */}
-      <header className="flex justify-between items-center mb-12" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '3rem' }}>
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header style={{ marginBottom: '3rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <Activity className="text-cyan-400" size={32} color="var(--neon-cyan)" />
-            <h1>Eterna<span style={{ color: 'var(--neon-cyan)' }}>Flow</span></h1>
+            <div style={{
+              padding: '0.75rem',
+              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(168, 85, 247, 0.2))',
+              borderRadius: '16px',
+              boxShadow: '0 0 30px rgba(6, 182, 212, 0.3)'
+            }}>
+              <Activity size={36} color="var(--neon-cyan)" />
+            </div>
+            <div>
+              <h1>Eterna<span style={{ color: 'var(--neon-cyan)' }}>Flow</span></h1>
+              <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.95rem', fontWeight: 500 }}>
+                Real-time Meme Coin Analytics
+              </p>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-            {/* Custom Sort Selector */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)' }}>Sort by:</span>
-              <div style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setIsSortOpen(!isSortOpen)}
-                  className="glass-panel"
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '12px',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: 'var(--text-main)',
-                    border: '1px solid var(--glass-border)',
-                    outline: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    minWidth: '160px',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  {sortOptions.find(o => o.value === sortBy)?.label}
-                  <ArrowDownRight size={14} style={{ transform: isSortOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                </button>
-
-                {isSortOpen && (
-                  <div className="glass-panel" style={{
-                    position: 'absolute',
-                    top: '110%',
-                    left: 0,
-                    width: '100%',
-                    borderRadius: '12px',
-                    background: '#0f172a', // Solid dark bg for dropdown
-                    border: '1px solid var(--glass-border)',
-                    padding: '0.5rem',
-                    zIndex: 10,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.25rem',
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)'
-                  }}>
-                    {sortOptions.map(opt => (
-                      <div
-                        key={opt.value}
-                        onClick={() => {
-                          setSortBy(opt.value);
-                          setIsSortOpen(false);
-                        }}
-                        style={{
-                          padding: '0.5rem 0.75rem',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          fontSize: '0.875rem',
-                          background: sortBy === opt.value ? 'rgba(6, 182, 212, 0.1)' : 'transparent',
-                          color: sortBy === opt.value ? 'var(--neon-cyan)' : 'var(--text-muted)',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-main)'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = sortBy === opt.value ? 'var(--neon-cyan)' : 'var(--text-muted)'}
-                      >
-                        {opt.label}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Timeframe Selector */}
-            <div className="glass-panel" style={{ padding: '0.25rem', borderRadius: '12px', display: 'flex', gap: '0.25rem' }}>
-              {(['1h', '24h', '7d'] as const).map(tf => (
-                <button
-                  key={tf}
-                  onClick={() => setSelectedTimeframe(tf)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    background: selectedTimeframe === tf ? 'rgba(255,255,255,0.1)' : 'transparent',
-                    color: selectedTimeframe === tf ? 'var(--text-main)' : 'var(--text-muted)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {tf.toUpperCase()}
-                </button>
-              ))}
-            </div>
-
-            <div className="glass-panel" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: connected ? 'var(--neon-green)' : 'var(--neon-pink)', boxShadow: connected ? '0 0 10px var(--neon-green)' : '' }}></div>
-                <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>{connected ? 'Live Stream' : 'Connecting...'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {/* Live Status Card */}
+            <div className="glass-panel" style={{
+              padding: '0.875rem 1.5rem',
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              background: connected ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(6, 182, 212, 0.05))' : 'rgba(255,255,255,0.03)'
+            }}>
+              <div className={connected ? 'pulse-glow' : ''} style={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                background: connected ? 'var(--neon-green)' : 'var(--neon-pink)',
+                boxShadow: connected ? '0 0 15px var(--neon-green)' : '0 0 15px var(--neon-pink)'
+              }}></div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>Status</div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 700, color: connected ? 'var(--neon-green)' : 'var(--text-muted)' }}>
+                  {connected ? 'Live' : 'Connecting...'}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div style={{ width: '100%', maxWidth: '600px', position: 'relative' }}>
-          <input
-            type="text"
-            placeholder="Search by token name or address..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '1rem 1.5rem',
-              paddingLeft: '3rem',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '16px',
-              color: 'white',
-              fontSize: '1.1rem',
-              backdropFilter: 'blur(10px)',
-              outline: 'none',
-              boxSizing: 'border-box'
-            }}
-          />
-          <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-            <Zap size={20} />
+        {/* Search and Controls Row */}
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '2rem' }}>
+          {/* Search Bar */}
+          <div style={{ flex: 1, maxWidth: '600px', position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Search tokens by name or address..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '1.125rem 1.75rem',
+                paddingLeft: '3.5rem',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '16px',
+                color: 'white',
+                fontSize: '1rem',
+                backdropFilter: 'blur(10px)',
+                outline: 'none',
+                transition: 'all 0.3s',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+              }}
+            />
+            <div style={{
+              position: 'absolute',
+              left: '1.25rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--neon-cyan)',
+              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(168, 85, 247, 0.1))',
+              padding: '0.5rem',
+              borderRadius: '8px'
+            }}>
+              <Zap size={18} />
+            </div>
+          </div>
+
+          {/* Sort Selector */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-muted)' }}>Sort:</span>
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setIsSortOpen(!isSortOpen)}
+                className="glass-panel"
+                style={{
+                  padding: '1rem 1.5rem',
+                  borderRadius: '14px',
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))',
+                  color: 'var(--text-main)',
+                  border: '1px solid var(--glass-border)',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  minWidth: '180px',
+                  justifyContent: 'space-between',
+                  fontWeight: 600,
+                  fontSize: '0.9rem'
+                }}
+              >
+                {sortOptions.find(o => o.value === sortBy)?.label}
+                <ArrowDownRight size={16} style={{ transform: isSortOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s', color: 'var(--neon-cyan)' }} />
+              </button>
+
+              {isSortOpen && (
+                <div className="glass-panel" style={{
+                  position: 'absolute',
+                  top: '110%',
+                  right: 0,
+                  width: '100%',
+                  borderRadius: '14px',
+                  background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(26, 20, 67, 0.98))',
+                  border: '1px solid var(--glass-border)',
+                  padding: '0.5rem',
+                  zIndex: 10,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.25rem',
+                  boxShadow: '0 20px 60px -12px rgba(0, 0, 0, 0.7)',
+                  backdropFilter: 'blur(20px)'
+                }}>
+                  {sortOptions.map(opt => (
+                    <div
+                      key={opt.value}
+                      onClick={() => {
+                        setSortBy(opt.value);
+                        setIsSortOpen(false);
+                      }}
+                      style={{
+                        padding: '0.75rem 1rem',
+                        borderRadius: '10px',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        background: sortBy === opt.value ? 'linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.1))' : 'transparent',
+                        color: sortBy === opt.value ? 'var(--neon-cyan)' : 'var(--text-muted)',
+                        transition: 'all 0.2s',
+                        fontWeight: sortBy === opt.value ? 700 : 600,
+                        borderLeft: sortBy === opt.value ? '3px solid var(--neon-cyan)' : '3px solid transparent'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = 'var(--text-main)';
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = sortBy === opt.value ? 'var(--neon-cyan)' : 'var(--text-muted)';
+                        e.currentTarget.style.background = sortBy === opt.value ? 'linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.1))' : 'transparent';
+                      }}
+                    >
+                      {opt.label}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Timeframe Selector */}
+          <div className="glass-panel" style={{ padding: '0.375rem', borderRadius: '14px', display: 'flex', gap: '0.375rem', background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))' }}>
+            {(['1h', '24h', '7d'] as const).map(tf => (
+              <button
+                key={tf}
+                onClick={() => setSelectedTimeframe(tf)}
+                style={{
+                  padding: '0.75rem 1.25rem',
+                  borderRadius: '10px',
+                  background: selectedTimeframe === tf ? 'linear-gradient(135deg, var(--neon-cyan), var(--neon-purple))' : 'transparent',
+                  color: selectedTimeframe === tf ? 'white' : 'var(--text-muted)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: selectedTimeframe === tf ? 700 : 600,
+                  fontSize: '0.875rem',
+                  transition: 'all 0.3s',
+                  boxShadow: selectedTimeframe === tf ? '0 4px 15px rgba(6, 182, 212, 0.4)' : 'none'
+                }}
+              >
+                {tf.toUpperCase()}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -314,7 +368,7 @@ function App() {
                     <TokenRow
                       key={token.token_address}
                       token={token}
-                      index={index + 1}
+                      index={(page - 1) * PAGE_LIMIT + index + 1}
                       prevPrice={prevPrices.current[token.token_address]}
                       timeframe={selectedTimeframe}
                     />
@@ -323,45 +377,76 @@ function App() {
                   <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>No tokens found for "{debouncedQuery}"</div>
                 )}
 
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', marginTop: '2rem', padding: '1rem' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  marginTop: '2.5rem',
+                  padding: '1.5rem'
+                }}>
                   <button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1 || loading}
                     className="glass-panel"
                     style={{
-                      padding: '0.5rem 1.5rem',
-                      borderRadius: '12px',
-                      background: page === 1 ? 'transparent' : 'rgba(255,255,255,0.05)',
-                      color: page === 1 ? 'var(--text-muted)' : 'var(--text-main)',
-                      border: page === 1 ? '1px solid transparent' : '1px solid var(--glass-border)',
+                      padding: '0.875rem 1.75rem',
+                      borderRadius: '14px',
+                      background: page === 1 ? 'transparent' : 'linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.1))',
+                      color: page === 1 ? 'var(--text-muted)' : 'var(--neon-cyan)',
+                      border: `1px solid ${page === 1 ? 'transparent' : 'var(--glass-border)'}`,
                       cursor: page === 1 ? 'not-allowed' : 'pointer',
-                      fontWeight: 600,
-                      transition: 'all 0.2s'
+                      fontWeight: 700,
+                      fontSize: '0.95rem',
+                      transition: 'all 0.3s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
                     }}
                   >
-                    &larr; Prev
+                    <ArrowDownRight size={16} style={{ transform: 'rotate(90deg)' }} />
+                    Previous
                   </button>
 
-                  <span style={{ fontWeight: 600, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                    Page {page}
-                  </span>
+                  <div className="glass-panel" style={{
+                    padding: '0.875rem 2rem',
+                    borderRadius: '14px',
+                    background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(168, 85, 247, 0.15))',
+                    border: '2px solid var(--neon-cyan)',
+                    boxShadow: '0 0 25px rgba(6, 182, 212, 0.3)'
+                  }}>
+                    <span style={{
+                      fontWeight: 800,
+                      color: 'var(--neon-cyan)',
+                      fontFamily: 'monospace',
+                      fontSize: '1.1rem',
+                      textShadow: '0 0 10px rgba(6, 182, 212, 0.5)'
+                    }}>
+                      Page {page}
+                    </span>
+                  </div>
 
                   <button
                     onClick={() => setPage(p => p + 1)}
                     disabled={!hasMore || loading}
                     className="glass-panel"
                     style={{
-                      padding: '0.5rem 1.5rem',
-                      borderRadius: '12px',
-                      background: !hasMore ? 'transparent' : 'rgba(255,255,255,0.05)',
-                      color: !hasMore ? 'var(--text-muted)' : 'var(--text-main)',
-                      border: !hasMore ? '1px solid transparent' : '1px solid var(--glass-border)',
+                      padding: '0.875rem 1.75rem',
+                      borderRadius: '14px',
+                      background: !hasMore ? 'transparent' : 'linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.1))',
+                      color: !hasMore ? 'var(--text-muted)' : 'var(--neon-cyan)',
+                      border: `1px solid ${!hasMore ? 'transparent' : 'var(--glass-border)'}`,
                       cursor: !hasMore ? 'not-allowed' : 'pointer',
-                      fontWeight: 600,
-                      transition: 'all 0.2s'
+                      fontWeight: 700,
+                      fontSize: '0.95rem',
+                      transition: 'all 0.3s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
                     }}
                   >
-                    Next &rarr;
+                    Next
+                    <ArrowDownRight size={16} style={{ transform: 'rotate(-90deg)' }} />
                   </button>
                 </div>
               </>
@@ -418,15 +503,53 @@ const TokenRow = ({ token, index, prevPrice, timeframe }: { token: Token, index:
       className={`token-row ${flashClass}`}
       style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}
     >
-      <span style={{ color: 'var(--text-muted)', fontFamily: 'monospace' }}>{String(index).padStart(2, '0')}</span>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: '40px'
+      }}>
+        <span style={{
+          color: 'var(--neon-cyan)',
+          fontFamily: 'monospace',
+          fontSize: '0.95rem',
+          fontWeight: 700,
+          background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.1))',
+          padding: '0.375rem 0.75rem',
+          borderRadius: '8px',
+          border: '1px solid rgba(6, 182, 212, 0.3)'
+        }}>
+          {String(index).padStart(2, '0')}
+        </span>
+      </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${getRandomColor(token.token_ticker)} 0%, #333 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 'bold' }}>
-          {token.token_ticker[0]}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+        <div style={{
+          width: 42,
+          height: 42,
+          borderRadius: '50%',
+          background: `linear-gradient(135deg, ${getRandomColor(token.token_ticker)} 0%, ${getSecondaryColor(token.token_ticker)} 100%)`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '1rem',
+          fontWeight: 900,
+          boxShadow: `0 0 20px ${getRandomColor(token.token_ticker)}40`,
+          border: '2px solid rgba(255,255,255,0.1)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <span style={{ position: 'relative', zIndex: 1 }}>{token.token_ticker[0]}</span>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent)',
+            pointerEvents: 'none'
+          }}></div>
         </div>
         <div>
-          <div style={{ fontWeight: 600 }}>{token.token_name}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{token.token_ticker}</div>
+          <div style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em' }}>{token.token_name}</div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>{token.token_ticker}</div>
         </div>
       </div>
 
@@ -467,7 +590,12 @@ function formatCompact(num: number) {
 }
 
 function getRandomColor(str: string) {
-  const colors = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b'];
+  const colors = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#06b6d4', '#a855f7'];
+  return colors[str.charCodeAt(0) % colors.length];
+}
+
+function getSecondaryColor(str: string) {
+  const colors = ['#f472b6', '#a78bfa', '#60a5fa', '#34d399', '#fbbf24', '#22d3ee', '#c084fc'];
   return colors[str.charCodeAt(0) % colors.length];
 }
 
