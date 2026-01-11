@@ -163,31 +163,4 @@ Set Redis TTL to 30 seconds but the worker fetches every 15 seconds. This means 
 ### Error Handling
 The HTTP client has exponential backoff retry logic - if DexScreener rate limits us, it waits [1s, 2s, 4s] before giving up. Also if Redis crashes, the app falls back to in-memory cache instead of erroring out.
 
-### UI Color Scheme
-Went with a dark theme with amber/coral accents instead of the typical blue/purple gradients. Wanted something that didn't look obviously AI-generated. The glassmorphism effect uses `backdrop-filter: blur()` which is pretty standard these days.
 
-## Things I Learned
-
-- How to implement WebSocket connections properly (Socket.io makes this way easier than raw WebSockets)
-- Redis is really fast but you need to think about TTLs and cache invalidation
-- Cursor pagination is better than offset for real-time data
-- Exponential backoff is essential when dealing with external APIs
-- TypeScript types can save you from a lot of runtime errors
-
-## Known Issues / Future Improvements
-
-- The 7-day price change data is often missing from the free APIs, so it shows 0% a lot
-- No historical charts yet (would need to store time-series data)
-- Search is basic string matching - could use fuzzy matching
-- No wallet integration for portfolio tracking
-- Mobile responsive but could be better
-
-## Why This Project?
-
-Built this to learn about real-time systems and scalable architecture patterns. The crypto space has a lot of interesting technical challenges - high-frequency data updates, rate limits on free APIs, need for caching, etc.
-
-Also wanted to practice with WebSockets, Redis, and TypeScript in a real project instead of just tutorials.
-
----
-
-Feel free to clone, modify, or use this as a reference for your own projects.
