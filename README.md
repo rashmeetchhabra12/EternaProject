@@ -1,501 +1,193 @@
 # EternaFlow - Real-time Meme Coin Aggregator
 
-<div align="center">
+A real-time cryptocurrency dashboard that pulls meme coin data from multiple sources and displays live price updates. Built as a learning project to understand WebSockets, caching strategies, and scalable backend architecture.
 
-![EternaFlow](https://img.shields.io/badge/EternaFlow-Live%20Analytics-f59e42?style=for-the-badge)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+## What This Project Does
 
-**A production-grade, real-time meme coin analytics dashboard aggregating data from multiple DEX sources**
+Basically, it's a live dashboard that shows meme coins trading on Solana DEXs. You can search for tokens, sort by different metrics (volume, market cap, price changes), and see prices update in real-time without refreshing the page.
 
-[Features](#-features) • [Architecture](#-architecture-design) • [Setup](#-quick-start) • [API](#-api-documentation)
+The interesting part is how it handles data - instead of hammering external APIs with every user request, I built a background worker that fetches data every 15 seconds and caches it in Redis. This way the frontend always gets instant responses.
 
-</div>
+## Tech Stack
 
----
+**Frontend:**
+- React with TypeScript
+- Vite for dev server
+- Socket.io for WebSocket connections
+- Framer Motion for animations
 
-## 📋 Table of Contents
+**Backend:**
+- Node.js + Express
+- TypeScript
+- Socket.io (server)
+- Redis for caching
+- node-cron for scheduled tasks
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Architecture Design](#-architecture-design)
-- [Tech Stack](#-tech-stack)
-- [Quick Start](#-quick-start)
-- [Design Decisions](#-design-decisions)
-- [API Documentation](#-api-documentation)
-- [Folder Structure](#-folder-structure)
+**Data Sources:**
+- DexScreener API (primary source)
+- Jupiter API (backup/additional data)
 
----
+## How It Works
 
-## 🎯 Overview
-
-EternaFlow is a sophisticated real-time cryptocurrency analytics platform designed to aggregate, process, and display meme coin data from multiple decentralized exchanges (DexScreener, Jupiter). The system demonstrates enterprise-level architecture patterns including distributed caching, WebSocket real-time updates, and cursor-based pagination.
-
-### Key Highlights
-
-- **Real-time Price Updates**: WebSocket-based live streaming with sub-second latency
-- **Multi-source Aggregation**: Intelligent merging of data from DexScreener and Jupiter APIs
-- **Production-Ready Caching**: Redis-based distributed cache with fallback mechanisms
-- **Scalable Architecture**: Stateless API design supporting horizontal scaling
-- **Premium UI/UX**: Modern glassmorphism design with smooth animations
-
----
-
-## ✨ Features
-
-### Core Functionality
-
-- ✅ **Live Token Tracking**: Real-time price updates via WebSocket connections
-- ✅ **Multi-Metric Sorting**: Sort by volume, market cap, 1h/24h/7d price changes
-- ✅ **Advanced Search**: Fuzzy search by token name or contract address
-- ✅ **Timeframe Filtering**: View price changes across 1h, 24h, 7d periods
-- ✅ **Cursor-based Pagination**: Efficient navigation through large datasets
-- ✅ **Visual Price Alerts**: Flash animations on price movements (green/red indicators)
-
-### Technical Features
-
-- 🔄 **Background Worker**: Automated data fetching every 15 seconds
-- 💾 **Two-Tier Caching**: Redis primary cache with in-memory fallback
-- 🚀 **Optimistic UI Updates**: Instant feedback with optimistic rendering
-- 📊 **Data Merging**: Intelligent token deduplication and source prioritization
-- 🔒 **Error Resilience**: Exponential backoff retry logic for external APIs
-
----
-
-## 🏗️ Architecture Design
-
-### System Architecture Diagram
+### The Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Frontend (React)                        │
-│  ┌──────────────┐    ┌──────────────┐    ┌─────────────────┐  │
-│  │  REST Client │◄───┤  WebSocket   │    │  State Manager  │  │
-│  └──────┬───────┘    └──────┬───────┘    └────────┬────────┘  │
-└─────────┼──────────────────┼─────────────────────┼────────────┘
-          │                  │                      │
-          ▼                  ▼                      │
-┌─────────────────────────────────────────────────────────────────┐
-│                    Backend (Node.js + Express)                  │
-│  ┌──────────────┐    ┌──────────────┐    ┌─────────────────┐  │
-│  │ REST API     │    │  WebSocket   │    │  Scheduler      │  │
-│  │ /tokens      │◄───┤  Server      │◄───┤  (cron: 15s)    │  │
-│  └──────┬───────┘    └──────────────┘    └────────┬────────┘  │
-│         │                                           │           │
-│         ▼                                           ▼           │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Cache Service (Abstraction)                │   │
-│  │  ┌──────────────────┐       ┌──────────────────┐       │   │
-│  │  │  Redis Cache     │       │  Memory Fallback  │       │   │
-│  │  │  (Primary)       │◄─────►│  (Secondary)      │       │   │
-│  │  └──────────────────┘       └──────────────────┘       │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      External Data Sources                      │
-│  ┌──────────────────┐              ┌──────────────────┐         │
-│  │  DexScreener API │              │   Jupiter API    │         │
-│  │  (Primary)       │              │   (Secondary)    │         │
-│  └──────────────────┘              └──────────────────┘         │
-└─────────────────────────────────────────────────────────────────┘
+Frontend (React) 
+    ↓
+REST API + WebSocket
+    ↓
+Redis Cache ← Background Worker (fetches every 15s)
+    ↓
+External APIs (DexScreener, Jupiter)
 ```
 
-### Data Flow
+### Key Design Choices
 
-1. **Background Job** fetches fresh data every 15s from DexScreener & Jupiter
-2. **Data Aggregation** merges and deduplicates tokens by contract address
-3. **Cache Layer** stores processed data in Redis (30s TTL)
-4. **WebSocket Broadcast** pushes real-time updates to all connected clients
-5. **REST API** serves cached data with sorting/filtering/pagination
-6. **Frontend** optimistically updates UI and subscribes to live streams
+**1. Why the background worker?**
 
----
+Instead of fetching from DexScreener/Jupiter on every API request, I run a cron job every 15 seconds that:
+- Fetches fresh data from both sources
+- Merges & deduplicates tokens
+- Stores everything in Redis with a 30-second TTL
 
-## 🛠️ Tech Stack
+This means API requests are super fast (just reading from cache) and we don't hit rate limits on external APIs.
 
-### Frontend
-- **React 18** - Component-based UI framework
-- **TypeScript** - Type-safe development
-- **Vite** - Lightning-fast build tool
-- **Axios** - HTTP client for REST API calls
-- **Socket.io-client** - WebSocket client library
-- **Framer Motion** - Animation library for smooth transitions
+**2. WebSocket for real-time updates**
 
-### Backend
-- **Node.js** - JavaScript runtime
-- **Express** - Minimal web framework
-- **TypeScript** - Type-safe server code
-- **Socket.io** - WebSocket server implementation
-- **ioredis** - High-performance Redis client
-- **node-cron** - Scheduled task execution
-- **Zod** - Runtime type validation
+The frontend makes one REST call on page load to get initial data, then subscribes to WebSocket events. Whenever the background worker fetches new data, it broadcasts to all connected clients. This is way more efficient than polling.
 
-### Infrastructure
-- **Redis** - In-memory data store for caching
-- **DexScreener API** - Primary DEX data source
-- **Jupiter API** - Secondary aggregator
+**3. Two-tier caching**
 
----
+Primary cache is Redis (shared across all backend instances if you scale horizontally). If Redis is down, there's an in-memory fallback so the app doesn't crash. Not the most sophisticated setup but it works.
 
-## 🚀 Quick Start
+**4. Cursor-based pagination**
+
+I went with cursor pagination instead of offset-based because:
+- Offset pagination has issues when the data changes between page loads (you can skip items)
+- Cursor is more stable - it's basically just the index of the last item you saw
+
+The API returns a `nextCursor` that the frontend uses for the next page.
+
+## Setup & Running Locally
 
 ### Prerequisites
-
-```bash
-# Node.js 18+ and npm
-node --version  # v18.0.0+
-npm --version   # 9.0.0+
-
-# Redis Server
-redis-server --version  # 6.0.0+
-```
+- Node.js (v18+)
+- Redis server
 
 ### Installation
 
 ```bash
-# 1. Clone the repository
-git clone <repository-url>
-cd EternaProject
-
-# 2. Install backend dependencies
+# Clone and install backend deps
 npm install
 
-# 3. Install frontend dependencies
+# Install frontend deps
 cd frontend
 npm install
 cd ..
 
-# 4. Start Redis (Windows)
-./redis/redis-server.exe
+# Start Redis
+./redis/redis-server.exe  # Windows
+# or
+redis-server  # Linux/Mac
 
-# OR (Linux/Mac)
-redis-server
-
-# 5. Start backend server
+# Start backend (in one terminal)
 npm start
 
-# 6. Start frontend dev server
+# Start frontend (in another terminal)
 cd frontend
 npm run dev
 ```
 
-### Access the Application
+Then open http://localhost:5173
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:3000
-- **WebSocket**: ws://localhost:3000
+## API Documentation
 
----
+### GET /tokens
 
-## 🧠 Design Decisions
+Query params:
+- `q` - Search by token name or address
+- `sort_by` - Options: `volume_sol`, `market_cap_sol`, `price_1hr_change`, `price_24hr_change`, `price_7d_change`
+- `limit` - Items per page (default 10)
+- `cursor` - For pagination
 
-### 1. Scalability Approach
-
-#### **Stateless API Design**
-- **Decision**: Keep the Express server completely stateless, storing all data in Redis
-- **Rationale**: Enables horizontal scaling - multiple backend instances can share the same Redis cache
-- **Trade-off**: Adds Redis as a dependency, but gains distributed state management
-
-#### **Background Worker Pattern**
-- **Decision**: Separate data fetching (heavy I/O) from API requests (latency-sensitive)
-- **Rationale**: Prevents "thundering herd" problem where 1000 users trigger 1000 external API calls
-- **Implementation**: Single cron job fetches data every 15s and populates cache
-
-### 2. Real-time Data & WebSocket Implementation
-
-#### **Hybrid REST + WebSocket Architecture**
-- **Decision**: Use REST for initial load, WebSocket for live updates
-- **Rationale**: 
-  - REST provides reliable, cacheable initial state
-  - WebSocket enables push-based real-time updates without polling overhead
-- **Pattern**: 
-  ```typescript
-  // Initial load (REST)
-  const data = await fetch('/tokens');
-  
-  // Subscribe to updates (WebSocket)
-  socket.on('price-update', (newData) => {
-    // Merge with existing state
-  });
-  ```
-
-#### **Server-side Broadcasting**
-- **Decision**: Backend pushes updates to all connected clients simultaneously
-- **Rationale**: More efficient than client polling (1 fetch vs N fetches)
-- **Optimization**: Only broadcast changed tokens, not full dataset
-
-### 3. Caching Strategy
-
-#### **Two-Tier Cache Architecture**
-
-```typescript
-// Cache Hierarchy
-1. Redis (Distributed, Persistent)
-   ├─ TTL: 30-60 seconds
-   └─ Shared across all backend instances
-
-2. Memory (Local, Volatile)
-   ├─ Fallback when Redis unavailable
-   └─ Per-instance cache
-```
-
-#### **Cache Key Design**
-- `tokens:all` - Full token list (bulk endpoint)
-- `search:{query}` - Search results (1 min TTL)
-- `token:{address}` - Individual token details
-
-#### **Write-Through Strategy**
-- **Decision**: Background worker updates cache proactively (write-through)
-- **Alternative Rejected**: Lazy loading (cache-aside) would add latency to first request
-- **Benefit**: API requests always hit warm cache (sub-millisecond response)
-
-### 4. Error Handling & Resilience
-
-#### **Exponential Backoff (HTTP Client)**
-```typescript
-// Retry logic for external APIs
-maxRetries: 3
-delay: [1s, 2s, 4s]
-```
-
-#### **Graceful Degradation**
-- Redis fails → Use in-memory cache
-- DexScreener fails → Use Jupiter data
-- WebSocket disconnects → Auto-reconnect with exponential backoff
-
-#### **Circuit Breaker Pattern**
-- Track API failure rates
-- Temporarily disable failing sources to prevent cascading failures
-
-### 5. Cursor-based Pagination
-
-#### **Why Not Offset Pagination?**
-| Offset (`?page=2&limit=20`) | Cursor (`?cursor=40&limit=20`) |
-|------------------------------|--------------------------------|
-| ❌ Skips data if list changes | ✅ Stable positioning |
-| ❌ Inefficient for large offsets | ✅ Constant-time lookups |
-| ✅ Simple to understand | ⚠️ Requires stateful cursor |
-
-#### **Implementation**
-```typescript
-// Request
-GET /tokens?limit=20&cursor=20
-
-// Response
+Response:
+```json
 {
-  data: [...],
-  nextCursor: "40"  // null if no more data
+  "data": [...],
+  "nextCursor": "20"
 }
-```
-
-### 6. UI/UX Design Philosophy
-
-#### **Glassmorphism Aesthetic**
-- **Decision**: Frosted glass effect with backdrop blur
-- **Rationale**: Modern, premium feel while maintaining readability
-- **Implementation**: `backdrop-filter: blur(16px) saturate(180%)`
-
-#### **Color Palette Strategy**
-- **Primary**: Warm amber (`#f59e42`) - distinctive from typical blue/purple AI gradients
-- **Accent**: Coral red (`#ff6b6b`) - energetic, attention-grabbing
-- **Background**: Dark slate (`#0d1117`) - GitHub-inspired professionalism
-
-#### **Animation Principles**
-- **Price Flash**: Green/red background pulse on price changes
-- **Hover States**: Subtle translateX/Y for depth perception
-- **Page Transitions**: Framer Motion for smooth list updates
-
----
-
-## 📡 API Documentation
-
-### REST Endpoints
-
-#### `GET /tokens`
-Fetch paginated, sorted, and filtered token list.
-
-**Query Parameters:**
-```typescript
-{
-  q?: string;           // Search query (name or address)
-  sort_by?: string;     // volume_sol | market_cap_sol | price_1hr_change | etc.
-  limit?: number;       // Items per page (default: 10, max: 100)
-  cursor?: string;      // Pagination cursor (offset index)
-}
-```
-
-**Response:**
-```typescript
-{
-  data: Token[];        // Array of token objects
-  nextCursor: string | null;  // Cursor for next page
-}
-
-interface Token {
-  token_address: string;
-  token_name: string;
-  token_ticker: string;
-  price_sol: number;
-  market_cap_sol: number;
-  volume_sol: number;
-  price_1hr_change: number;
-  price_24hr_change: number;
-  price_7d_change: number;
-}
-```
-
-**Example:**
-```bash
-curl "http://localhost:3000/tokens?sort_by=volume_sol&limit=20"
 ```
 
 ### WebSocket Events
 
-#### Client → Server
-```typescript
-// Connect (automatic)
-socket.connect()
-```
+Connect to `ws://localhost:3000`
 
-#### Server → Client
-```typescript
-// Connection established
-socket.on('connect', () => {
-  console.log('Connected to real-time stream');
-});
+Events:
+- `connect` - Connection established
+- `price-update` - Server broadcasts updated token list
+- `disconnect` - Connection lost
 
-// Price update broadcast
-socket.on('price-update', (tokens: Token[]) => {
-  // Full token list with updated prices
-  updateUI(tokens);
-});
-
-// Disconnection
-socket.on('disconnect', () => {
-  console.log('Disconnected');
-});
-```
-
----
-
-## 📂 Folder Structure
+## Project Structure
 
 ```
-EternaProject/
-├── frontend/                   # React frontend application
+├── frontend/
 │   ├── src/
-│   │   ├── App.tsx            # Main application component
-│   │   └── index.css          # Global styles & theme variables
-│   ├── package.json
-│   └── vite.config.ts         # Vite configuration
+│   │   ├── App.tsx          # Main React component
+│   │   └── index.css        # Styles (glassmorphism theme)
+│   └── package.json
 │
-├── src/                        # Backend source code
+├── src/
 │   ├── api/
-│   │   ├── server.ts          # Express app & WebSocket setup
-│   │   └── tokenController.ts # REST endpoint handlers
-│   │
+│   │   ├── server.ts        # Express + Socket.io setup
+│   │   └── tokenController.ts
 │   ├── services/
-│   │   ├── cache.ts           # Redis + Memory cache abstraction
-│   │   ├── fetcher.ts         # DexScreener & Jupiter API clients
-│   │   └── aggregator.ts      # Token merging & deduplication logic
-│   │
+│   │   ├── cache.ts         # Redis wrapper
+│   │   ├── fetcher.ts       # API clients
+│   │   └── aggregator.ts    # Token merging logic
 │   ├── worker/
-│   │   └── scheduler.ts       # Background data fetching cron job
-│   │
-│   ├── types/
-│   │   └── index.ts           # TypeScript type definitions
-│   │
-│   ├── utils/
-│   │   └── httpClient.ts      # Axios instance with retry logic
-│   │
-│   └── config/
-│       └── redis.ts           # Redis connection configuration
+│   │   └── scheduler.ts     # Background cron job
+│   └── types/
+│       └── index.ts
 │
-├── redis/                      # Redis server binaries (Windows)
-│   └── redis-server.exe
-│
-├── package.json                # Backend dependencies
-├── tsconfig.json               # TypeScript configuration
-└── README.md                   # This file
+└── package.json
 ```
 
----
+## Design Decisions & Tradeoffs
 
-## 🎨 UI Components Breakdown
+### Stateless Backend
+Kept the Express server completely stateless - all state lives in Redis. This means you could theoretically run multiple backend instances behind a load balancer and they'd all share the same cache. I didn't implement actual load balancing but the architecture supports it.
 
-### Header Section
-- **Brand Logo**: Animated Activity icon with gradient background
-- **Live Status Indicator**: Pulsing dot with connection state
-- **Search Bar**: Debounced input (500ms) with icon accent
-- **Sort Dropdown**: Custom-styled select with gradient options
-- **Timeframe Selector**: Pill-style toggle buttons (1h/24h/7d)
+### Cache TTL Strategy
+Set Redis TTL to 30 seconds but the worker fetches every 15 seconds. This means even if the worker fails once, we still have cached data. The downside is you might see slightly stale data (worst case 30 seconds old).
 
-### Token Table
-- **Row Numbering**: Sequential badges with gradient background
-- **Token Avatars**: Dual-gradient circles with shine overlay
-- **Price Display**: Monospace font with 9 decimal precision
-- **Change Indicators**: Arrow icons with color-coded percentages
-- **Volume/Market Cap**: Compact notation (e.g., "1.2M SOL")
+### Error Handling
+The HTTP client has exponential backoff retry logic - if DexScreener rate limits us, it waits [1s, 2s, 4s] before giving up. Also if Redis crashes, the app falls back to in-memory cache instead of erroring out.
 
-### Pagination Controls
-- **Previous/Next Buttons**: Disabled states with transparency
-- **Page Indicator**: Glowing badge with current page number
-- **Responsive Layout**: Centered flex with proper spacing
+### UI Color Scheme
+Went with a dark theme with amber/coral accents instead of the typical blue/purple gradients. Wanted something that didn't look obviously AI-generated. The glassmorphism effect uses `backdrop-filter: blur()` which is pretty standard these days.
 
----
+## Things I Learned
 
-## 🔒 Security Considerations
+- How to implement WebSocket connections properly (Socket.io makes this way easier than raw WebSockets)
+- Redis is really fast but you need to think about TTLs and cache invalidation
+- Cursor pagination is better than offset for real-time data
+- Exponential backoff is essential when dealing with external APIs
+- TypeScript types can save you from a lot of runtime errors
 
-1. **API Rate Limiting**: DexScreener/Jupiter have rate limits - background worker mitigates this
-2. **Input Validation**: Zod schemas validate all API query parameters
-3. **XSS Prevention**: React's automatic escaping prevents injection attacks
-4. **CORS Configuration**: Configured for localhost development (update for production)
-5. **Environment Variables**: Sensitive configs should use `.env` files (not committed)
+## Known Issues / Future Improvements
 
----
+- The 7-day price change data is often missing from the free APIs, so it shows 0% a lot
+- No historical charts yet (would need to store time-series data)
+- Search is basic string matching - could use fuzzy matching
+- No wallet integration for portfolio tracking
+- Mobile responsive but could be better
 
-## 🚦 Performance Optimizations
+## Why This Project?
 
-1. **Debounced Search**: 500ms delay prevents excessive API calls while typing
-2. **Optimistic UI Updates**: State updates immediately before API confirmation
-3. **Virtualization Ready**: Token list can be virtualized for >1000 items (react-window)
-4. **Code Splitting**: Vite automatically splits bundles for faster initial load
-5. **Memoization**: React.memo on TokenRow prevents unnecessary re-renders
+Built this to learn about real-time systems and scalable architecture patterns. The crypto space has a lot of interesting technical challenges - high-frequency data updates, rate limits on free APIs, need for caching, etc.
+
+Also wanted to practice with WebSockets, Redis, and TypeScript in a real project instead of just tutorials.
 
 ---
 
-## 📈 Future Enhancements
-
-- [ ] Historical price charts (TradingView integration)
-- [ ] Portfolio tracking (wallet connection via Phantom/Solflare)
-- [ ] Price alerts (email/push notifications)
-- [ ] Advanced filtering (liquidity thresholds, age filters)
-- [ ] Multi-chain support (Ethereum, BSC, Polygon)
-- [ ] Dark/Light mode toggle
-- [ ] Export data (CSV/JSON download)
-
----
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
----
-
-## 👨‍💻 Author
-
-Built with ❤️ for the crypto community.
-
----
-
-<div align="center">
-
-**🌟 Star this repo if you find it useful! 🌟**
-
-Made with [React](https://react.dev/) • [Node.js](https://nodejs.org/) • [Redis](https://redis.io/)
-
-</div>
+Feel free to clone, modify, or use this as a reference for your own projects.
